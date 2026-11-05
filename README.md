@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Task Manager — MongoDB + Docker
 
 A small course project built with **Node.js, Express, MongoDB, Mongoose and Docker Compose**.
@@ -61,3 +62,6 @@ Fields: `_id`, `title`, `completed`, `createdAt`, `updatedAt`
 
 ## Project abstract
 The Task Manager is a simple web application that helps users maintain a list of daily activities. It provides create, read, update and delete (CRUD) operations through a REST API. MongoDB stores task records, while Docker and Docker Compose containerize the application and database, making the project easy to run consistently across different systems.
+=======
+# task-manager-mongodb-docker
+>>>>>>> ce8cd49605102df933d3e003ea83c158da95755d
