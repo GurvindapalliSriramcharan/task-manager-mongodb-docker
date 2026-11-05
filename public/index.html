@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f2f5f9;color:#182235}
+    .wrap{max-width:650px;margin:55px auto;padding:28px;background:white;border-radius:16px;box-shadow:0 8px 30px #14213d14}
+    h1{margin:0 0 8px}.sub{color:#68758a;margin:0 0 24px}
+    form{display:flex;gap:10px}input{flex:1;min-width:0;padding:13px;border:1px solid #ccd4df;border-radius:8px;font-size:15px}
+    button{border:0;border-radius:8px;padding:12px 16px;background:#3157d5;color:white;font-weight:bold;cursor:pointer}
+    ul{list-style:none;padding:0;margin:22px 0 0}li{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid #edf0f4}
+    li span{flex:1;overflow-wrap:anywhere}.done{text-decoration:line-through;color:#8792a3}
+    .delete{background:#e8edf5;color:#344054}.status{font-size:12px;color:#68758a;margin-top:18px}
+    @media(max-width:520px){.wrap{margin:20px 12px;padding:20px}form{flex-wrap:wrap}form input{flex-basis:100%}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>My Task Manager</h1>
+    <p class="sub">Add tasks, track completion, and store everything in MongoDB.</p>
+    <form id="taskForm">
+      <input id="title" placeholder="What do you need to do?" maxlength="120" required>
+      <button type="submit">Add task</button>
+    </form>
+    <ul id="tasks"></ul>
+    <p class="status" id="status">Connecting to database…</p>
+  </main>
+<script>
+const list = document.getElementById("tasks");
+const statusText = document.getElementById("status");
+async function loadTasks() {
+  try {
+    const res = await fetch("/api/tasks");
+    if (!res.ok) throw new Error();
+    const tasks = await res.json();
+    list.innerHTML = "";
+    tasks.forEach(task => {
+      const li = document.createElement("li");
+      const check = document.createElement("input");
+      check.type = "checkbox"; check.checked = task.completed;
+      check.addEventListener("change", () => updateTask(task._id, check.checked));
+      const span = document.createElement("span");
+      span.textContent = task.title;
+      if (task.completed) span.className = "done";
+      const del = document.createElement("button");
+      del.textContent = "Delete"; del.className = "delete";
+      del.addEventListener("click", () => deleteTask(task._id));
+      li.append(check, span, del); list.appendChild(li);
+    });
+    statusText.textContent = `${tasks.length} task(s) saved in MongoDB`;
+  } catch { statusText.textContent = "Could not connect to the application."; }
+}
+document.getElementById("taskForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const input = document.getElementById("title");
+  const title = input.value.trim(); if (!title) return;
+  const res = await fetch("/api/tasks", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title})});
+  if (res.ok) { input.value = ""; loadTasks(); }
+});
+async function updateTask(id, completed) {
+  await fetch(`/api/tasks/${id}`, {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({completed})});
+  loadTasks();
+}
+async function deleteTask(id) {
+  await fetch(`/api/tasks/${id}`, {method:"DELETE"}); loadTasks();
+}
+loadTasks();
+</script>
+</body>
+</html>
